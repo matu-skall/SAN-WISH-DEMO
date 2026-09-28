@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { MapPin, Phone, Instagram, ChevronDown, Utensils, Star, Clock } from 'lucide-react';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function SanWishHome() {
@@ -19,14 +18,17 @@ export default function SanWishHome() {
         .select('*')
         .eq('is_available', true);
       
-      if (!error && data) setMenuItems(data);
+      if (!error && data) {
+        setMenuItems(data);
+      }
     }
     fetchMenu();
   }, []);
 
   const groupedMenu = menuItems.reduce((acc, item) => {
-    acc[item.category] = acc[item.category] || [];
-    acc[item.category].push(item);
+    const cat = item.category || 'General';
+    acc[cat] = acc[cat] || [];
+    acc[cat].push(item);
     return acc;
   }, {});
 
@@ -48,7 +50,7 @@ export default function SanWishHome() {
           <div className="text-2xl font-serif italic text-white font-bold tracking-wider">SanWish</div>
           <div className="flex gap-4">
             <a href="https://wa.me/56958976362" className="text-green-500 hover:text-green-400 flex items-center gap-2 font-bold">
-              <Phone size={18} /> Contáctanos
+              Contáctanos
             </a>
           </div>
         </div>
@@ -64,11 +66,11 @@ export default function SanWishHome() {
           <strong className="text-[#c11c17]">Delivery, Take away y consumo en lugar</strong> | Estacionamiento gratuito
         </p>
         <a href="#carta" className="inline-flex items-center gap-2 bg-[#181818] border border-gray-700 text-white px-8 py-4 rounded-full font-bold hover:bg-[#c11c17] hover:border-[#c11c17] transition-all transform hover:scale-105">
-          <Utensils size={20} /> VER CARTA INTERACTIVA
+          VER CARTA INTERACTIVA
         </a>
       </section>
 
-      {/* Carta Interactiva (Reemplazo del PDF) */}
+      {/* Carta Interactiva */}
       <section id="carta" className="py-20 bg-[#151515] px-4 border-t border-gray-800">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
@@ -86,8 +88,8 @@ export default function SanWishHome() {
             <div className="grid md:grid-cols-2 gap-8">
               {Object.keys(groupedMenu).map((category) => (
                 <div key={category} className="bg-black/40 backdrop-blur-sm border border-[#c11c17]/30 p-8 rounded-2xl hover:border-[#c11c17] transition-all">
-                  <h3 className="text-2xl text-yellow-500 font-serif italic mb-6 border-b border-gray-800 pb-3 flex items-center gap-3">
-                    <Utensils size={24} className="text-[#c11c17]" /> {category}
+                  <h3 className="text-2xl text-yellow-500 font-serif italic mb-6 border-b border-gray-800 pb-3">
+                    {category}
                   </h3>
                   <ul className="space-y-6">
                     {groupedMenu[category].map((item) => (
@@ -97,7 +99,7 @@ export default function SanWishHome() {
                           {item.description && <p className="text-sm text-gray-400 mt-1 leading-snug">{item.description}</p>}
                         </div>
                         <div className="font-bold text-[#c11c17] whitespace-nowrap text-lg">
-                          ${item.price.toLocaleString('es-CL')}
+                          ${item.price ? item.price.toLocaleString('es-CL') : ''}
                         </div>
                       </li>
                     ))}
@@ -109,15 +111,12 @@ export default function SanWishHome() {
         </div>
       </section>
 
-      {/* Opiniones (Estilo Original Replicado) */}
+      {/* Opiniones */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-serif italic mb-4">Lo que dicen <span className="text-[#c11c17]">nuestros clientes</span></h2>
-            <div className="flex justify-center items-center gap-2 text-yellow-500">
-              {[...Array(5)].map((_, i) => <Star key={i} fill="currentColor" size={20} />)}
-              <span className="text-white font-bold ml-2">4.6 ★</span>
-            </div>
+            <span className="text-white font-bold ml-2">4.6 ★★★★★</span>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
@@ -125,7 +124,7 @@ export default function SanWishHome() {
               { name: "Ivonne Molina", review: "El mejor lugar de Huechuraba para hamburguesas." },
               { name: "Stephanie Birkner", review: "La Tropi Burguer excelente, atención rápida y deliciosa." }
             ].map((review, idx) => (
-              <div key={idx} className="bg-[#1f1f1f] border-l-4 border-[#c11c17] p-6 rounded-xl hover:bg-[#252525] transition-colors">
+              <div key={idx} className="bg-[#1f1f1f] border-l-4 border-[#c11c17] p-6 rounded-xl">
                 <p className="italic text-gray-300 mb-4">"{review.review}"</p>
                 <strong className="block text-white">{review.name}</strong>
                 <span className="text-yellow-500 text-sm">★★★★★</span>
@@ -149,8 +148,8 @@ export default function SanWishHome() {
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
                   className="w-full bg-[#1a1a1a] p-5 text-left font-bold flex justify-between items-center hover:bg-[#222] transition-colors"
                 >
-                  <span className="flex items-center gap-3"><Star size={18} className="text-[#c11c17]" /> {faq.q}</span>
-                  <ChevronDown className={`transform transition-transform ${openFaq === idx ? 'rotate-180' : ''}`} />
+                  <span>{faq.q}</span>
+                  <span>{openFaq === idx ? '▲' : '▼'}</span>
                 </button>
                 {openFaq === idx && (
                   <div className="bg-[#0f0f0f] p-5 text-gray-400 border-t border-gray-800">
@@ -163,19 +162,19 @@ export default function SanWishHome() {
         </div>
       </section>
 
-      {/* Footer & Ubicación */}
-      <footer className="bg-black pt-16 pb-8 border-t border-gray-800">
-        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-12 mb-12 text-center md:text-left">
+      {/* Footer */}
+      <footer className="bg-black pt-16 pb-8 border-t border-gray-800 text-center md:text-left">
+        <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-12 mb-12">
           <div>
             <h3 className="text-3xl font-serif italic text-white mb-4">SanWish</h3>
             <p className="text-gray-400">Sabores clásicos, toque gourmet.<br/>Pan amasado diario y carnes premium.</p>
           </div>
           <div>
-            <h4 className="text-lg font-bold mb-4 flex items-center justify-center md:justify-start gap-2"><Clock size={18}/> Horario</h4>
+            <h4 className="text-lg font-bold mb-4">Horario</h4>
             <p className="text-gray-400">Lun-Dom: 12:00 - 22:00hrs<br/>Delivery hasta 23:00hrs</p>
           </div>
           <div>
-            <h4 className="text-lg font-bold mb-4 flex items-center justify-center md:justify-start gap-2"><MapPin size={18}/> Ubicación</h4>
+            <h4 className="text-lg font-bold mb-4">Ubicación</h4>
             <p className="text-gray-400">Pedro Fontova 7280, Local 116<br/>Huechuraba, Santiago.</p>
           </div>
         </div>
